@@ -1,4 +1,4 @@
-# 📦 Streamlit App Starter Kit 
+# 📦 First Try
 ```
 ⬆️ (Replace above with your app's name)
 ```
