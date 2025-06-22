@@ -55,9 +55,46 @@ def run_dune_query(query_id):
 # --- App Start ---
 st.set_page_config(page_title="Arbitrum DAO Governance", layout="wide")
 # --- Welcome popup on first load ---
-if "welcome_shown" not in st.session_state:
-    st.toast("👋 Ready to dive into Arbitrum governance? Made with ❤️ by Entropy Advisors.", icon="🌐")
-    st.session_state.welcome_shown = True
+if "hide_modal" not in st.session_state:
+    st.session_state.hide_modal = False
+
+if not st.session_state.hide_modal:
+    with st.container():
+        st.markdown(
+            """
+            <div style='
+                position: fixed;
+                top: 25%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background-color: white;
+                padding: 2rem;
+                border-radius: 12px;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+                z-index: 9999;
+                width: 400px;
+                text-align: center;
+            '>
+                <h3>👋 Ready to dive into Arbitrum governance?</h3>
+                <p>Made with ❤️ by Entropy Advisors.</p>
+            """, unsafe_allow_html=True
+        )
+        if st.button("Let's go!", key="dismiss"):
+            st.session_state.hide_modal = True
+        st.markdown("</div>", unsafe_allow_html=True)
+
+st.markdown("""
+<style>
+/* Make sidebar handle more visible */
+[data-testid="stSidebar"]::before {
+    content: "👈 Click here to open filters & sort tools";
+    color: #888;
+    font-size: 0.85rem;
+    margin-left: 8px;
+    display: block;
+}
+</style>
+""", unsafe_allow_html=True)
 
 st.markdown("""
 <style>
@@ -170,22 +207,34 @@ st.subheader("📊 Proposal Overview")
 
 for _, row in df.iterrows():
     with st.container():
+        st.markdown(
+            """
+            <div style='
+                background-color: #ffffff;
+                border: 1px solid #e0e0e0;
+                border-radius: 10px;
+                padding: 1rem;
+                margin-bottom: 1.5rem;
+                box-shadow: 0px 2px 6px rgba(0,0,0,0.05);
+            '>
+            """, unsafe_allow_html=True
+        )
+
         st.markdown(f"### 📝 {row['proposal_title']}")
 
-        # Support bar
         try:
             st.progress(float(row["support_rate"]) / 100, text=f"{float(row['support_rate']):.2f}% support")
         except:
             st.warning("No support rate")
 
-        # Info bar row
         col1, col2, col3, col4 = st.columns([1, 1, 1, 1])
         col1.markdown(f"👥 **{row['voters']} voters**")
-        col2.markdown(f"🗳 **{row['vote_participation']}% participation**")
+        col2.markdown(f"📦 **{float(row['vote_participation']):.2f}% participation**")
         col3.markdown(f"🎭 **{row['proposal_theme']}**")
         col4.markdown(render_outcome_label(row['proposal_outcome_label']), unsafe_allow_html=True)
 
-        st.markdown("<hr style='margin:1rem 0'>", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+
 
 
 
