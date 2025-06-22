@@ -58,45 +58,35 @@ st.set_page_config(page_title="Arbitrum DAO Governance", layout="wide")
 if "hide_modal" not in st.session_state:
     st.session_state.hide_modal = False
 
-if not st.session_state.hide_modal:
+if not st.session_state.get("hide_modal", False):
     with st.container():
-        st.markdown(
-            """
-            <div style='
-                position: fixed;
-                top: 25%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                background-color: white;
-                padding: 2rem;
-                border-radius: 12px;
-                box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-                z-index: 9999;
-                width: 400px;
-                text-align: center;
-            '>
-                <h3>👋 Ready to dive into Arbitrum governance?</h3>
-                <p>Made with ❤️ by Entropy Advisors.</p>
-            """, unsafe_allow_html=True
-        )
         st.markdown("""
-            <div style="position: absolute; top: 10px; right: 15px;">
-                <form action="" method="post">
-                    <button name="close_modal" style="
-                        background: none;
-                        border: none;
-                        font-size: 1.2rem;
-                        font-weight: bold;
-                        cursor: pointer;
-                        color: #888;
-                    ">✖</button>
-                </form>
-            </div>
+        <div style="
+            position: fixed;
+            top: 20%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            z-index: 1000;
+            width: 400px;
+            text-align: center;
+        ">
+            <h2>👋 Ready to dive into Arbitrum governance?</h2>
+            <p>Made with ❤️ by Entropy Advisors.</p>
+        </div>
         """, unsafe_allow_html=True)
 
-        if "close_modal" in st.session_state or st.form_submit_button("close_modal"):
+        # X Button (visually overlaid)
+        st.markdown("""
+        <div style="position: fixed; top: 20%; right: 30%; z-index: 1001;">
+        """, unsafe_allow_html=True)
+        if st.button("✖", key="dismiss"):
             st.session_state.hide_modal = True
         st.markdown("</div>", unsafe_allow_html=True)
+
 
 st.markdown("""
 <style>
