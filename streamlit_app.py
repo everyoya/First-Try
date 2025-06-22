@@ -8,15 +8,11 @@ DUNE_API_KEY = "Dmb8mqxsxiJ6g3v23dRg1aTVdVUk4JEy"
 QUERY_ID = 4628058
 HEADERS = {"x-dune-api-key": DUNE_API_KEY}
 
-
-# --- Fetch and cache data ---
 @st.cache_data(ttl=3600)
 def run_dune_query(query_id):
-    # 1. Trigger execution
     res = requests.post(f"https://api.dune.com/api/v1/query/{query_id}/execute", headers=HEADERS)
     execution_id = res.json().get("execution_id")
 
-    # 2. Poll until complete
     while True:
         status = requests.get(
             f"https://api.dune.com/api/v1/execution/{execution_id}/status", headers=HEADERS
@@ -27,7 +23,6 @@ def run_dune_query(query_id):
             raise Exception("Query failed")
         time.sleep(2)
 
-    # 3. Fetch results
     result = requests.get(
         f"https://api.dune.com/api/v1/execution/{execution_id}/results", headers=HEADERS
     ).json()
@@ -36,70 +31,96 @@ def run_dune_query(query_id):
     return df
 
 
-# --- Streamlit App Layout ---
-st.set_page_config(page_title="Arbitrum DAO Proposals", layout="wide")
+# --- App Start ---
+st.set_page_config(page_title="Arbitrum DAO Governance", layout="wide")
 st.title("🗳️ Arbitrum DAO Governance Overview")
-st.caption("Powered by live Dune data | Query ID: 4628058")
+st.caption("Live from Dune | Query 4628058")
 
-# Get and preview data
 df = run_dune_query(QUERY_ID)
-st.write("Columns:", df.columns.tolist())
 
-# Rename columns for convenience (you can adjust these to match actual)
-df = df.rename(columns={
-    "Proposal": "proposal",
-    "Proposal Type": "type",
-    "Outcome": "outcome",
-    "Category": "category",
-    "Theme": "theme",
-    "Voters": "voters",
-    "Quorum": "quorum",
-    "Total Votes": "total_votes",
-    "Quorum Progress": "quorum_progress",
-    "Support Rate": "support_rate"
-})
+# Show all column names
+st.expander("🧾 Show All Columns").write(df.columns.tolist())
 
 # Filters
 with st.sidebar:
-    selected_outcome = st.selectbox("Filter by Outcome", ["All"] + sorted(df["outcome"].dropna().unique().tolist()))
-    selected_theme = st.selectbox("Filter by Theme", ["All"] + sorted(df["theme"].dropna().unique().tolist()))
+    outcome = st.selectbox("Filter by Outcome", ["All"] + sorted(df["proposal_outcome_label"].dropna().unique()))
+    theme = st.selectbox("Filter by Theme", ["All"] + sorted(df["proposal_theme"].dropna().unique()))
 
-# Apply filters
-if selected_outcome != "All":
-    df = df[df["outcome"] == selected_outcome]
-if selected_theme != "All":
-    df = df[df["theme"] == selected_theme]
+if outcome != "All":
+    df = df[df["proposal_outcome_label"] == outcome]
+if theme != "All":
+    df = df[df["proposal_theme"] == theme]
 
-# Metrics
+# --- Metrics ---
 col1, col2, col3 = st.columns(3)
-col1.metric("📄 Proposals", len(df))
+col1.metric("🧾 Total Proposals", len(df))
 col2.metric("👥 Avg. Voters", f"{df['voters'].mean():,.0f}")
 try:
-    avg_support = df['support_rate'].astype(str).str.replace('%','').astype(float).mean()
+    avg_support = df["support_rate"].astype(float).mean()
     col3.metric("💙 Avg. Support Rate", f"{avg_support:.2f}%")
 except:
     col3.metric("💙 Avg. Support Rate", "N/A")
 
 st.divider()
 
-# Support Rate Bars
-st.subheader("🔎 Support Per Proposal")
+# --- Proposal Overview ---
+st.subheader("📊 Proposal Overview")
 for _, row in df.iterrows():
-    st.markdown(f"**{row['proposal']}**")
+    st.markdown(f"**{row['proposal_title']}**")
     try:
-        support = float(str(row["support_rate"]).replace('%',''))
-        st.progress(support / 100, text=f"{row['support_rate']} support")
+        st.progress(float(row["support_rate"]) / 100, text=f"{float(row['support_rate']):.2f}% support")
     except:
-        st.write("❌ No support rate available")
-    st.caption(f"{row['voters']} voters | {row['outcome']} | {row['theme']}")
+        st.warning("No support rate")
+    st.caption(f"""
+    ID: {row['proposal_id']} | Outcome: {row['proposal_outcome_label']} | Theme: {row['proposal_theme']}  
+    Voters: {row['voters']} | Participation: {row['vote_participation']}%
+    """)
 
 st.divider()
 
-# Chart: Top by Total Votes
-st.subheader("📊 Top 10 Proposals by Total Votes")
+# --- Chart: Top by Participation ---
+st.subheader("📈 Top Proposals by Voter Participation")
 try:
-    df["total_votes_clean"] = df["total_votes"].astype(str).str.replace("m", "").astype(float)
-    top = df.sort_values(by="total_votes_clean", ascending=False).head(10)
-    st.bar_chart(top.set_index("proposal")["total_votes_clean"])
+    df["vote_participation"] = df["vote_participation"].astype(float)
+    top_participation = df.sort_values(by="vote_participation", ascending=False).head(10)
+    st.bar_chart(top_participation.set_index("proposal_title")["vote_participation"])
 except:
-    st.write("Could not parse total votes.")
+    st.warning("Can't parse vote_participation for chart.")
+
+st.divider()
+
+# --- Optional Full Table View ---
+with st.expander("📋 Full Raw Data Table"):
+    st.dataframe(df)
+
+# --- Summary of All Columns ---
+st.subheader("🧩 Column Dictionary")
+st.markdown("""
+Here’s a quick explanation of all 41 columns in your dataset:
+
+- **arb_allocation** — ARB amount allocated by the proposal  
+- **contract_address** — Address of the contract that initiated the proposal  
+- **creation_block** — Block in which the proposal was created  
+- **creation_time** — Timestamp of creation  
+- **creation_tx_hash** — TX hash of proposal creation  
+- **delegated_voting_power** — Delegated voting power at the time  
+- **delegates** — Count of delegates who voted  
+- **eth_allocation** — ETH allocation amount  
+- **opex_arb / opex_eth / opex_usd / opex_percentage** — Opex costs in different denominations  
+- **proposal_category** — Category tag (e.g. Treasury, Governance)  
+- **proposal_id / proposal_index / proposal_number** — ID details  
+- **proposal_outcome / proposal_outcome_label** — Raw + human-readable outcome  
+- **proposal_tally** — Total vote count  
+- **proposal_theme** — Thematic label (e.g. Grants, Infra)  
+- **proposal_title** — Title of the proposal  
+- **proposal_type** — Proposal type (e.g. AIP, TempCheck)  
+- **proposer / proposer_name** — Wallet + human-readable name  
+- **proposer_tally** — Voting power of the proposer  
+- **quorum / quorum_progress** — Quorum details  
+- **support_rate** — Support percentage (0-100%)  
+- **usd_allocation / votable_tokens** — Funding and voting info  
+- **vote_participation / voter_participation** — Participation rates  
+- **voters / votes / votes_for / votes_against / votes_abstain / votes_total** — Voting breakdown  
+- **voting_power_utilisation** — How much voting power was used  
+- **voting_start_block / voting_end_block** — Voting window info  
+""")
