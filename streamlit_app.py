@@ -67,10 +67,33 @@ with st.sidebar:
     outcome = st.selectbox("Filter by Outcome", ["All"] + sorted(df["proposal_outcome_label"].dropna().unique()))
     theme = st.selectbox("Filter by Theme", ["All"] + sorted(df["proposal_theme"].dropna().unique()))
 
+    sort_by = st.selectbox(
+        "Sort proposals by",
+        options=["support_rate", "voters", "vote_participation", "proposal_title"],
+        format_func=lambda x: {
+            "support_rate": "💙 Support Rate",
+            "voters": "👥 Voters",
+            "vote_participation": "🗳 Participation",
+            "proposal_title": "🔤 Title (A-Z)"
+        }.get(x, x)
+    )
+
+    sort_order = st.radio("Sort order", options=["Descending", "Ascending"], horizontal=True)
+
+
 if outcome != "All":
     df = df[df["proposal_outcome_label"] == outcome]
 if theme != "All":
     df = df[df["proposal_theme"] == theme]
+
+ascending = sort_order == "Ascending"
+try:
+    df[sort_by] = pd.to_numeric(df[sort_by], errors='coerce')
+    df = df.sort_values(by=sort_by, ascending=ascending)
+except Exception as e:
+    st.warning(f"Could not sort by '{sort_by}': {e}")
+
+
 
 # --- Metrics ---
 col1, col2, col3 = st.columns(3)
