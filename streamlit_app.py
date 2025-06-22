@@ -17,7 +17,7 @@ if st.session_state.page == 'intro':
     last_name = st.text_input("Last Name")
 
     if st.button("Continue"):
-    if first_name and last_name:
+      if first_name and last_name:
         st.session_state.first_name = first_name
         st.session_state.last_name = last_name
         st.session_state.page = 'welcome'
