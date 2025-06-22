@@ -1,24 +1,45 @@
 import streamlit as st
-from dune_helper import run_dune_query
+import requests
+import time
 import pandas as pd
 
-st.set_page_config(page_title="Arbitrum DAO Proposals", layout="wide")
+# --- Settings ---
+DUNE_API_KEY = "Dmb8mqxsxiJ6g3v23dRg1aTVdVUk4JEy"
+QUERY_ID = 4628058
+HEADERS = {"x-dune-api-key": DUNE_API_KEY}
 
+# --- Dune Fetch Logic ---
 @st.cache_data(ttl=3600)
-def get_data():
-    return run_dune_query(4628058)
+def run_dune_query(query_id):
+    # 1. Trigger execution
+    res = requests.post(f"https://api.dune.com/api/v1/query/{query_id}/execute", headers=HEADERS)
+    execution_id = res.json().get("execution_id")
 
-df = get_data()
+    # 2. Poll until ready
+    while True:
+        status = requests.get(f"https://api.dune.com/api/v1/execution/{execution_id}/status", headers=HEADERS).json()
+        if status["state"] == "QUERY_STATE_COMPLETED":
+            break
+        elif status["state"] == "QUERY_STATE_FAILED":
+            raise Exception("Query failed")
+        time.sleep(2)
 
+    # 3. Get results
+    results = requests.get(f"https://api.dune.com/api/v1/execution/{execution_id}/results", headers=HEADERS).json()
+    return pd.DataFrame(results["result"]["rows"])
+
+# --- UI ---
+st.set_page_config(page_title="Arbitrum DAO Proposals", layout="wide")
 st.title("🗳️ Arbitrum DAO Governance Overview")
 st.caption("Live data from Dune | Query ID: 4628058")
 
-# Sidebar filters
+df = run_dune_query(QUERY_ID)
+
+# Filters
 with st.sidebar:
     status = st.selectbox("Filter by Outcome", ["All"] + df["Outcome"].unique().tolist())
     theme = st.selectbox("Filter by Theme", ["All"] + sorted(df["Theme"].dropna().unique().tolist()))
 
-# Apply filters
 if status != "All":
     df = df[df["Outcome"] == status]
 if theme != "All":
@@ -27,24 +48,26 @@ if theme != "All":
 # Top metrics
 col1, col2, col3 = st.columns(3)
 col1.metric("🧾 Total Proposals", len(df))
-col2.metric("🧍‍♂️ Total Voters (avg)", f"{df['Voters'].mean():,.0f}")
+col2.metric("🧍 Avg. Voters", f"{df['Voters'].mean():,.0f}")
 col3.metric("💙 Avg. Support Rate", f"{df['Support Rate'].astype(float).mean():.2f}%")
 
 st.divider()
 
-# Show support bars and visual indicators
+# Visual support bars
 st.subheader("🔎 Proposal Support Overview")
 for _, row in df.iterrows():
     st.markdown(f"**{row['Proposal']}**")
-    st.progress(float(row["Support Rate"]) / 100, text=f"{row['Support Rate']} support")
+    try:
+        rate = float(row["Support Rate"].replace('%', ''))
+        st.progress(rate / 100, text=f"{row['Support Rate']} support")
+    except:
+        st.write("❌ Support rate missing")
     st.caption(f"{row['Voters']} voters | {row['Outcome']} | Theme: {row['Theme']}")
 
 st.divider()
 
-# Chart: Most Voted Proposals
+# Chart: Total Votes
 st.subheader("📊 Top Proposals by Total Votes")
-df_votes = df.copy()
-df_votes["Total Votes"] = df_votes["Total Votes"].astype(str).str.replace("m", "").astype(float)
-top_votes = df_votes.sort_values(by="Total Votes", ascending=False).head(10)
-
+df["Total Votes"] = df["Total Votes"].astype(str).str.replace("m", "").astype(float)
+top_votes = df.sort_values(by="Total Votes", ascending=False).head(10)
 st.bar_chart(top_votes.set_index("Proposal")["Total Votes"])
