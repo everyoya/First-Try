@@ -79,7 +79,22 @@ if not st.session_state.hide_modal:
                 <p>Made with ❤️ by Entropy Advisors.</p>
             """, unsafe_allow_html=True
         )
-        if st.button("Let's go!", key="dismiss"):
+                st.markdown("""
+            <div style="position: absolute; top: 10px; right: 15px;">
+                <form action="" method="post">
+                    <button name="close_modal" style="
+                        background: none;
+                        border: none;
+                        font-size: 1.2rem;
+                        font-weight: bold;
+                        cursor: pointer;
+                        color: #888;
+                    ">✖</button>
+                </form>
+            </div>
+        """, unsafe_allow_html=True)
+
+        if "close_modal" in st.session_state or st.form_submit_button("close_modal"):
             st.session_state.hide_modal = True
         st.markdown("</div>", unsafe_allow_html=True)
 
