@@ -53,7 +53,7 @@ def run_dune_query(query_id):
 
 
 # --- App Start ---
-st.set_page_config(page_title="Arbitrum DAO Governance", layout="wide)
+st.set_page_config(page_title="Arbitrum DAO Governance", layout="wide")
 # --- Welcome popup on first load ---
 if "welcome_shown" not in st.session_state:
     st.toast("👋 Ready to dive into Arbitrum governance? Made with ❤️ by Entropy Advisors.", icon="🌐")
