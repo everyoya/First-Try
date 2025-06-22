@@ -53,7 +53,41 @@ def run_dune_query(query_id):
 
 
 # --- App Start ---
-st.set_page_config(page_title="Arbitrum DAO Governance", layout="wide")
+st.set_page_config(page_title="Arbitrum DAO Governance", layout="wide)
+# --- Welcome popup on first load ---
+if "welcome_shown" not in st.session_state:
+    st.toast("👋 Ready to dive into Arbitrum governance? Made with ❤️ by Entropy Advisors.", icon="🌐")
+    st.session_state.welcome_shown = True
+
+st.markdown("""
+<style>
+/* Make everything feel cleaner and more modern */
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #f8f9fa;
+}
+
+.block-container {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+
+/* Headings look smoother */
+h1, h2, h3 {
+    font-family: 'Segoe UI', sans-serif;
+    font-weight: 600;
+    color: #111111;
+}
+
+/* Proposal card spacing */
+hr {
+    border: none;
+    border-top: 1px solid #ddd;
+    margin: 1.5rem 0;
+}
+</style>
+""", unsafe_allow_html=True)
+
 st.title("🗳️ Arbitrum DAO Governance Overview")
 st.caption("Live from Dune | Query 4628058")
 
@@ -63,12 +97,30 @@ df = run_dune_query(QUERY_ID)
 st.expander("🧾 Show All Columns").write(df.columns.tolist())
 
 # Filters
+# Sidebar: Filters and Sorting
 with st.sidebar:
-    outcome = st.selectbox("Filter by Outcome", ["All"] + sorted(df["proposal_outcome_label"].dropna().unique()))
-    theme = st.selectbox("Filter by Theme", ["All"] + sorted(df["proposal_theme"].dropna().unique()))
+    # SECTION 1 – Filters
+    st.markdown("### 🔍 Filter Proposals")
+    st.caption("Narrow the proposals by outcome and theme.")
+
+    outcome = st.selectbox(
+        "🎯 Proposal Outcome",
+        options=["All"] + sorted(df["proposal_outcome_label"].dropna().unique())
+    )
+
+    theme = st.selectbox(
+        "🎭 Proposal Theme",
+        options=["All"] + sorted(df["proposal_theme"].dropna().unique())
+    )
+
+    st.divider()
+
+    # SECTION 2 – Sorting
+    st.markdown("### 📊 Sort Proposals")
+    st.caption("Choose how to order the proposals below.")
 
     sort_by = st.selectbox(
-        "Sort proposals by",
+        "🔢 Sort By",
         options=["support_rate", "voters", "vote_participation", "proposal_title"],
         format_func=lambda x: {
             "support_rate": "💙 Support Rate",
@@ -78,7 +130,13 @@ with st.sidebar:
         }.get(x, x)
     )
 
-    sort_order = st.radio("Sort order", options=["Descending", "Ascending"], horizontal=True)
+    sort_order = st.radio("⬆️⬇️ Sort Order", options=["Descending", "Ascending"], horizontal=True)
+
+    st.divider()
+
+    # SECTION 3 – Optional Toggles
+    high_support_only = st.checkbox("✅ Show only proposals with > 50% support")
+
 
 
 if outcome != "All":
@@ -109,18 +167,26 @@ st.divider()
 
 # --- Proposal Overview ---
 st.subheader("📊 Proposal Overview")
+
 for _, row in df.iterrows():
-    st.markdown(f"### 📝 {row['proposal_title']}")
-    try:
-        st.progress(float(row["support_rate"]) / 100, text=f"{float(row['support_rate']):.2f}% support")
-    except:
-        st.warning("No support rate")
+    with st.container():
+        st.markdown(f"### 📝 {row['proposal_title']}")
 
-    left, right = st.columns([0.85, 0.15])
-    left.caption(f"👥 {row['voters']} voters | 🎭 Theme: {row['proposal_theme']} | 🗳 Participation: {row['vote_participation']}%")
-    right.markdown(render_outcome_label(row['proposal_outcome_label']), unsafe_allow_html=True)
+        # Support bar
+        try:
+            st.progress(float(row["support_rate"]) / 100, text=f"{float(row['support_rate']):.2f}% support")
+        except:
+            st.warning("No support rate")
 
-    st.markdown("---")
+        # Info bar row
+        col1, col2, col3, col4 = st.columns([1, 1, 1, 1])
+        col1.markdown(f"👥 **{row['voters']} voters**")
+        col2.markdown(f"🗳 **{row['vote_participation']}% participation**")
+        col3.markdown(f"🎭 **{row['proposal_theme']}**")
+        col4.markdown(render_outcome_label(row['proposal_outcome_label']), unsafe_allow_html=True)
+
+        st.markdown("<hr style='margin:1rem 0'>", unsafe_allow_html=True)
+
 
 
 st.divider()
