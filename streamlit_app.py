@@ -79,7 +79,7 @@ if not st.session_state.hide_modal:
                 <p>Made with ❤️ by Entropy Advisors.</p>
             """, unsafe_allow_html=True
         )
-                st.markdown("""
+        st.markdown("""
             <div style="position: absolute; top: 10px; right: 15px;">
                 <form action="" method="post">
                     <button name="close_modal" style="
