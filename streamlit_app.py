@@ -1,7 +1,7 @@
 import streamlit as st
 import requests
 import time
-import pandas as pd
+import pandas as pd 
 
 # --- Dune API Setup ---
 DUNE_API_KEY = "Dmb8mqxsxiJ6g3v23dRg1aTVdVUk4JEy"
