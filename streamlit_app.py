@@ -9,6 +9,27 @@ QUERY_ID = 4628058
 HEADERS = {"x-dune-api-key": DUNE_API_KEY}
 
 @st.cache_data(ttl=3600)
+
+# --- Outcome Badge Styling ---
+def render_outcome_label(outcome):
+    color_map = {
+        "Passed": "#2ecc71",      # Green
+        "Defeated": "#e74c3c",    # Red
+        "Executed": "#9b59b6",    # Purple
+        "Active": "#3498db",      # Blue
+        "Cancelled": "#7f8c8d"    # Gray
+    }
+    color = color_map.get(outcome, "#bdc3c7")  # Default gray
+    return f"""
+    <span style='
+        background-color:{color};
+        padding:4px 10px;
+        border-radius:4px;
+        color:white;
+        font-size:0.85rem;
+    '>{outcome}</span>
+    """
+
 def run_dune_query(query_id):
     res = requests.post(f"https://api.dune.com/api/v1/query/{query_id}/execute", headers=HEADERS)
     execution_id = res.json().get("execution_id")
@@ -66,15 +87,18 @@ st.divider()
 # --- Proposal Overview ---
 st.subheader("📊 Proposal Overview")
 for _, row in df.iterrows():
-    st.markdown(f"**{row['proposal_title']}**")
+    st.markdown(f"### 📝 {row['proposal_title']}")
     try:
         st.progress(float(row["support_rate"]) / 100, text=f"{float(row['support_rate']):.2f}% support")
     except:
         st.warning("No support rate")
-    st.caption(f"""
-    ID: {row['proposal_id']} | Outcome: {row['proposal_outcome_label']} | Theme: {row['proposal_theme']}  
-    Voters: {row['voters']} | Participation: {row['vote_participation']}%
-    """)
+
+    left, right = st.columns([0.85, 0.15])
+    left.caption(f"👥 {row['voters']} voters | 🎭 Theme: {row['proposal_theme']} | 🗳 Participation: {row['vote_participation']}%")
+    right.markdown(render_outcome_label(row['proposal_outcome_label']), unsafe_allow_html=True)
+
+    st.markdown("---")
+
 
 st.divider()
 
