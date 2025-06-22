@@ -17,13 +17,13 @@ if st.session_state.page == 'intro':
     last_name = st.text_input("Last Name")
 
     if st.button("Continue"):
-        if first_name and last_name:
-            st.session_state.first_name = first_name
-            st.session_state.last_name = last_name
-            st.session_state.page = 'welcome'
-            st.experimental_rerun()  # refresh the app to move to next page
-        else:
-            st.warning("Please enter both your first and last name.")
+    if first_name and last_name:
+        st.session_state.first_name = first_name
+        st.session_state.last_name = last_name
+        st.session_state.page = 'welcome'
+        st.rerun()  # <-- the updated method!
+    else:
+        st.warning("Please enter both your first and last name.")
 
 elif st.session_state.page == 'welcome':
     st.title(f"🎉 Welcome, {st.session_state.first_name} {st.session_state.last_name}!")
