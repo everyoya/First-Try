@@ -150,25 +150,32 @@ except:
 col1, col2, col3 = st.columns(3)
 col1.metric("🧾 Total Proposals", len(df))
 col2.metric("👥 Avg. Voters", f"{df['voters'].mean():,.0f}")
-avg_support = df["support_rate"].astype(float).mean()
+avg_support_raw = df["support_rate"].astype(float).mean()
+avg_support = avg_support_raw * 100 if avg_support_raw <= 1 else avg_support_raw
 col3.metric("💙 Avg. Support Rate", f"{avg_support:.2f}%")
 
 st.divider()
 st.subheader("📊 Proposal Overview")
 
 for _, row in df.iterrows():
-    with st.expander(f"📝 {row['proposal_title']} ({row['support_rate']}% support)"):
+    # Convert support_rate to proper percentage format
+    support_rate_display = float(row['support_rate']) * 100 if float(row['support_rate']) <= 1 else float(row['support_rate'])
+    
+    with st.expander(f"📝 {row['proposal_title']} ({support_rate_display:.2f}% support)"):
         st.markdown(f"👥 Voters: **{row['voters']}**")
         st.markdown(f"📦 Participation: **{row['vote_participation']}%**")
         st.markdown(f"🎭 Theme: **{row['proposal_theme']}**")
         st.markdown(render_outcome_label(row['proposal_outcome_label']), unsafe_allow_html=True)
-        progress = float(row["support_rate"]) / 100
+        
+        # Convert support_rate to decimal for progress bar (0-1 range)
+        support_rate_decimal = float(row["support_rate"]) if float(row["support_rate"]) <= 1 else float(row["support_rate"]) / 100
+        progress = support_rate_decimal
         bar_color = "#3498db" if progress < 0.5 else "#2ecc71"
         st.markdown(f"""
         <div style="background-color: #eee; border-radius: 10px; overflow: hidden; height: 20px; margin-top: 0.5rem;">
             <div style="height: 100%; width: {progress*100:.2f}%; background: {bar_color}; transition: width 0.5s;"></div>
         </div>
-        <p style="font-size: 0.9rem;">💙 {progress*100:.2f}% Support</p>
+        <p style="font-size: 0.9rem;">💙 {support_rate_display:.2f}% Support</p>
         """, unsafe_allow_html=True)
 
 st.divider()
