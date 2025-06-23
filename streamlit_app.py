@@ -5,6 +5,15 @@ import pandas as pd
 from streamlit_lottie import st_lottie
 import os
 
+# --- Brand Colors ---
+MIDNIGHT = "#030D1C"
+DIGITAL_AZURE = "#0557F5"
+STONE = "#E0E3D1"
+CRYSTAL = "#9ECFF2"
+WHITE = "#FFFFFF"
+
+LOGO_URL = "https://entropyadvisors.com/wp-content/uploads/2024/05/entropy-advisors-logo-white-rgb.svg"
+
 # --- Dune API Setup ---
 DUNE_API_KEY = "Dmb8mqxsxiJ6g3v23dRg1aTVdVUk4JEy"
 QUERY_ID = 4628058
@@ -30,13 +39,13 @@ def run_dune_query(query_id):
 
 def render_outcome_label(outcome):
     color_map = {
-        "Passed": "linear-gradient(135deg, #2ecc71, #27ae60)",
-        "Defeated": "linear-gradient(135deg, #e74c3c, #c0392b)",
-        "Executed": "linear-gradient(135deg, #9b59b6, #8e44ad)",
-        "Active": "linear-gradient(135deg, #3498db, #2980b9)",
-        "Cancelled": "linear-gradient(135deg, #7f8c8d, #6c7b7d)"
+        "Passed": f"linear-gradient(135deg, #2ecc71, #27ae60)",
+        "Defeated": f"linear-gradient(135deg, #e74c3c, #c0392b)",
+        "Executed": f"linear-gradient(135deg, {DIGITAL_AZURE}, {CRYSTAL})",
+        "Active": f"linear-gradient(135deg, {DIGITAL_AZURE}, {CRYSTAL})",
+        "Cancelled": f"linear-gradient(135deg, #7f8c8d, #6c7b7d)"
     }
-    gradient = color_map.get(outcome, "linear-gradient(135deg, #bdc3c7, #95a5a6)")
+    gradient = color_map.get(outcome, f"linear-gradient(135deg, {MIDNIGHT}, {DIGITAL_AZURE})")
     return f"""
     <span style='background: {gradient}; padding: 6px 12px; border-radius: 20px; color: white; font-size: 0.8rem; font-weight: 600; box-shadow: 0 2px 4px rgba(0,0,0,0.1);'>
         {outcome}
@@ -61,8 +70,112 @@ def load_lottie(url):
 # --- App Setup ---
 st.set_page_config(page_title="Arbitrum DAO Governance", layout="wide", initial_sidebar_state="expanded")
 
-# --- Branding Logo URL ---
-LOGO_URL = "https://entropyadvisors.com/wp-content/uploads/2024/05/entropy-advisors-logo-white-rgb.svg"
+# --- Global Brand CSS ---
+st.markdown(f"""
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+body, .main, .block-container {{
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+    background: linear-gradient(135deg, {MIDNIGHT} 0%, {DIGITAL_AZURE} 70%, {CRYSTAL} 100%) !important;
+    color: {WHITE};
+}}
+
+[data-testid="stSidebar"] {{
+    background: linear-gradient(135deg, {MIDNIGHT} 0%, {DIGITAL_AZURE} 100%) !important;
+    color: {WHITE} !important;
+}}
+
+[data-testid="stSidebar"] * {{
+    color: {WHITE} !important;
+}}
+
+.metric-card {{
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 18px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    backdrop-filter: blur(12px);
+    transition: box-shadow 0.3s;
+}}
+.metric-card:hover {{
+    box-shadow: 0 16px 48px rgba(5,87,245,0.18);
+}}
+.metric-icon {{
+    font-size: 2.2rem;
+    margin-bottom: 0.5rem;
+    display: block;
+}}
+.metric-value {{
+    font-size: 2rem;
+    font-weight: 700;
+    color: {CRYSTAL};
+    margin-bottom: 0.25rem;
+}}
+.metric-label {{
+    font-size: 1rem;
+    color: {WHITE};
+    font-weight: 500;
+}}
+
+.custom-progress {{
+    background: rgba(255,255,255,0.10);
+    border-radius: 15px;
+    overflow: hidden;
+    height: 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+}}
+.custom-progress-fill {{
+    height: 100%;
+    border-radius: 15px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+}}
+
+.stButton > button {{
+    background: linear-gradient(135deg, {DIGITAL_AZURE} 0%, {CRYSTAL} 100%);
+    border: none;
+    border-radius: 25px;
+    color: {WHITE};
+    font-weight: 600;
+    padding: 0.5rem 1.5rem;
+    box-shadow: 0 4px 15px rgba(5,87,245,0.18);
+    transition: box-shadow 0.3s, transform 0.2s;
+}}
+.stButton > button:hover {{
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(5,87,245,0.28);
+}}
+
+.stSelectbox > div > div, .stRadio > div, .stCheckbox > div {{
+    background: rgba(255,255,255,0.08);
+    border-radius: 12px;
+    color: {WHITE};
+}}
+
+hr {{
+    border: none;
+    height: 2px;
+    background: linear-gradient(90deg, transparent 0%, {CRYSTAL} 50%, transparent 100%);
+    margin: 2rem 0;
+}}
+
+.stDataFrame, .dataframe {{
+    background: rgba(255,255,255,0.05);
+    border-radius: 12px;
+    color: {WHITE};
+}}
+
+h1, h2, h3 {{
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    background: linear-gradient(135deg, {CRYSTAL} 0%, {DIGITAL_AZURE} 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}}
+</style>
+""", unsafe_allow_html=True)
 
 # --- Header with Logo ---
 st.markdown(f'<div style="text-align:center; margin-bottom: 1.5rem;"><img src="{LOGO_URL}" alt="Entropy Advisors Logo" style="height:80px;"/></div>', unsafe_allow_html=True)
