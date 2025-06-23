@@ -1,7 +1,8 @@
 import streamlit as st
 import requests
 import time
-import pandas as pd 
+import pandas as pd
+from streamlit_lottie import st_lottie
 
 # --- Dune API Setup ---
 DUNE_API_KEY = "Dmb8mqxsxiJ6g3v23dRg1aTVdVUk4JEy"
@@ -9,88 +10,47 @@ QUERY_ID = 4628058
 HEADERS = {"x-dune-api-key": DUNE_API_KEY}
 
 @st.cache_data(ttl=3600)
-
-# --- Outcome Badge Styling ---
-def render_outcome_label(outcome):
-    color_map = {
-        "Passed": "#2ecc71",      # Green
-        "Defeated": "#e74c3c",    # Red
-        "Executed": "#9b59b6",    # Purple
-        "Active": "#3498db",      # Blue
-        "Cancelled": "#7f8c8d"    # Gray
-    }
-    color = color_map.get(outcome, "#bdc3c7")  # Default gray
-    return f"""
-    <span style='
-        background-color:{color};
-        padding:4px 10px;
-        border-radius:4px;
-        color:white;
-        font-size:0.85rem;
-    '>{outcome}</span>
-    """
-
 def run_dune_query(query_id):
     res = requests.post(f"https://api.dune.com/api/v1/query/{query_id}/execute", headers=HEADERS)
     execution_id = res.json().get("execution_id")
 
     while True:
-        status = requests.get(
-            f"https://api.dune.com/api/v1/execution/{execution_id}/status", headers=HEADERS
-        ).json()
+        status = requests.get(f"https://api.dune.com/api/v1/execution/{execution_id}/status", headers=HEADERS).json()
         if status["state"] == "QUERY_STATE_COMPLETED":
             break
         elif status["state"] == "QUERY_STATE_FAILED":
             raise Exception("Query failed")
         time.sleep(2)
 
-    result = requests.get(
-        f"https://api.dune.com/api/v1/execution/{execution_id}/results", headers=HEADERS
-    ).json()
+    result = requests.get(f"https://api.dune.com/api/v1/execution/{execution_id}/results", headers=HEADERS).json()
     df = pd.DataFrame(result["result"]["rows"])
     df.columns = [c.strip() for c in df.columns]
     return df
 
+def render_outcome_label(outcome):
+    color_map = {
+        "Passed": "#2ecc71",
+        "Defeated": "#e74c3c",
+        "Executed": "#9b59b6",
+        "Active": "#3498db",
+        "Cancelled": "#7f8c8d"
+    }
+    color = color_map.get(outcome, "#bdc3c7")
+    return f"""
+    <span style='background-color:{color}; padding:4px 10px; border-radius:4px; color:white; font-size:0.85rem;'>
+        {outcome}
+    </span>
+    """
 
-# --- App Start ---
+def load_lottie(url):
+    return requests.get(url).json()
+
+# --- App Setup ---
 st.set_page_config(page_title="Arbitrum DAO Governance", layout="wide")
-# --- Welcome popup on first load ---
-if "hide_modal" not in st.session_state:
-    st.session_state.hide_modal = False
 
-if not st.session_state.get("hide_modal", False):
-    with st.container():
-        st.markdown("""
-        <div style="
-            position: fixed;
-            top: 20%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: white;
-            padding: 2rem;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            z-index: 1000;
-            width: 400px;
-            text-align: center;
-        ">
-            <h2>👋 Ready to dive into Arbitrum governance?</h2>
-            <p>Made with ❤️ by Entropy Advisors.</p>
-        </div>
-        """, unsafe_allow_html=True)
-
-        # X Button (visually overlaid)
-        st.markdown("""
-        <div style="position: fixed; top: 20%; right: 30%; z-index: 1001;">
-        """, unsafe_allow_html=True)
-        if st.button("✖", key="dismiss"):
-            st.session_state.hide_modal = True
-        st.markdown("</div>", unsafe_allow_html=True)
-
-
+# --- Styling ---
 st.markdown("""
 <style>
-/* Make sidebar handle more visible */
 [data-testid="stSidebar"]::before {
     content: "👈 Click here to open filters & sort tools";
     color: #888;
@@ -98,30 +58,19 @@ st.markdown("""
     margin-left: 8px;
     display: block;
 }
-</style>
-""", unsafe_allow_html=True)
-
-st.markdown("""
-<style>
-/* Make everything feel cleaner and more modern */
 body {
     font-family: 'Segoe UI', sans-serif;
     background-color: #f8f9fa;
 }
-
 .block-container {
     padding-top: 2rem;
     padding-bottom: 2rem;
 }
-
-/* Headings look smoother */
 h1, h2, h3 {
     font-family: 'Segoe UI', sans-serif;
     font-weight: 600;
     color: #111111;
 }
-
-/* Proposal card spacing */
 hr {
     border: none;
     border-top: 1px solid #ddd;
@@ -130,122 +79,81 @@ hr {
 </style>
 """, unsafe_allow_html=True)
 
+# --- Welcome Animation ---
+if "hide_modal" not in st.session_state:
+    st.session_state.hide_modal = False
+if not st.session_state.hide_modal:
+    with st.container():
+        st_lottie(load_lottie("https://assets3.lottiefiles.com/packages/lf20_2kscqf.json"), height=200)
+        st.markdown("<h2 style='text-align:center;'>\U0001F44B Ready to dive into Arbitrum governance?</h2><p style='text-align:center;'>Made with ❤️ by Entropy Advisors.</p>", unsafe_allow_html=True)
+        if st.button("✖ Close"):
+            st.session_state.hide_modal = True
+
+# --- Dark Mode Toggle ---
+dark_mode = st.sidebar.toggle("🌓 Dark Mode", value=False)
+if dark_mode:
+    st.markdown("""
+    <style>
+    body { background-color: #111 !important; color: #eee !important; }
+    .st-emotion-cache-1avcm0n { background-color: #1c1c1c !important; }
+    </style>
+    """, unsafe_allow_html=True)
+
+# --- Load Data ---
 st.title("🗳️ Arbitrum DAO Governance Overview")
 st.caption("Live from Dune | Query 4628058")
-
 df = run_dune_query(QUERY_ID)
 
-# Show all column names
-st.expander("🧾 Show All Columns").write(df.columns.tolist())
-
-# Filters
-# Sidebar: Filters and Sorting
 with st.sidebar:
-    # SECTION 1 – Filters
     st.markdown("### 🔍 Filter Proposals")
-    st.caption("Narrow the proposals by outcome and theme.")
-
-    outcome = st.selectbox(
-        "🎯 Proposal Outcome",
-        options=["All"] + sorted(df["proposal_outcome_label"].dropna().unique())
-    )
-
-    theme = st.selectbox(
-        "🎭 Proposal Theme",
-        options=["All"] + sorted(df["proposal_theme"].dropna().unique())
-    )
-
+    outcome = st.selectbox("🎯 Proposal Outcome", options=["All"] + sorted(df["proposal_outcome_label"].dropna().unique()))
+    theme = st.selectbox("🎭 Proposal Theme", options=["All"] + sorted(df["proposal_theme"].dropna().unique()))
     st.divider()
-
-    # SECTION 2 – Sorting
     st.markdown("### 📊 Sort Proposals")
-    st.caption("Choose how to order the proposals below.")
-
-    sort_by = st.selectbox(
-        "🔢 Sort By",
-        options=["support_rate", "voters", "vote_participation", "proposal_title"],
-        format_func=lambda x: {
-            "support_rate": "💙 Support Rate",
-            "voters": "👥 Voters",
-            "vote_participation": "🗳 Participation",
-            "proposal_title": "🔤 Title (A-Z)"
-        }.get(x, x)
-    )
-
+    sort_by = st.selectbox("🔢 Sort By", options=["support_rate", "voters", "vote_participation", "proposal_title"], format_func=lambda x: {"support_rate": "💙 Support Rate", "voters": "👥 Voters", "vote_participation": "🗳 Participation", "proposal_title": "🔤 Title (A-Z)"}.get(x, x))
     sort_order = st.radio("⬆️⬇️ Sort Order", options=["Descending", "Ascending"], horizontal=True)
-
     st.divider()
-
-    # SECTION 3 – Optional Toggles
     high_support_only = st.checkbox("✅ Show only proposals with > 50% support")
-
-
 
 if outcome != "All":
     df = df[df["proposal_outcome_label"] == outcome]
 if theme != "All":
     df = df[df["proposal_theme"] == theme]
+if high_support_only:
+    df = df[df["support_rate"].astype(float) > 50]
 
 ascending = sort_order == "Ascending"
 try:
     df[sort_by] = pd.to_numeric(df[sort_by], errors='coerce')
     df = df.sort_values(by=sort_by, ascending=ascending)
-except Exception as e:
-    st.warning(f"Could not sort by '{sort_by}': {e}")
+except:
+    pass
 
-
-
-# --- Metrics ---
 col1, col2, col3 = st.columns(3)
 col1.metric("🧾 Total Proposals", len(df))
 col2.metric("👥 Avg. Voters", f"{df['voters'].mean():,.0f}")
-try:
-    avg_support = df["support_rate"].astype(float).mean()
-    col3.metric("💙 Avg. Support Rate", f"{avg_support:.2f}%")
-except:
-    col3.metric("💙 Avg. Support Rate", "N/A")
+avg_support = df["support_rate"].astype(float).mean()
+col3.metric("💙 Avg. Support Rate", f"{avg_support:.2f}%")
 
 st.divider()
-
-# --- Proposal Overview ---
 st.subheader("📊 Proposal Overview")
 
 for _, row in df.iterrows():
-    with st.container():
-        st.markdown(
-            """
-            <div style='
-                background-color: #ffffff;
-                border: 1px solid #e0e0e0;
-                border-radius: 10px;
-                padding: 1rem;
-                margin-bottom: 1.5rem;
-                box-shadow: 0px 2px 6px rgba(0,0,0,0.05);
-            '>
-            """, unsafe_allow_html=True
-        )
-
-        st.markdown(f"### 📝 {row['proposal_title']}")
-
-        try:
-            st.progress(float(row["support_rate"]) / 100, text=f"{float(row['support_rate']):.2f}% support")
-        except:
-            st.warning("No support rate")
-
-        col1, col2, col3, col4 = st.columns([1, 1, 1, 1])
-        col1.markdown(f"👥 **{row['voters']} voters**")
-        col2.markdown(f"📦 **{float(row['vote_participation']):.2f}% participation**")
-        col3.markdown(f"🎭 **{row['proposal_theme']}**")
-        col4.markdown(render_outcome_label(row['proposal_outcome_label']), unsafe_allow_html=True)
-
-        st.markdown("</div>", unsafe_allow_html=True)
-
-
-
+    with st.expander(f"📝 {row['proposal_title']} ({row['support_rate']}% support)"):
+        st.markdown(f"👥 Voters: **{row['voters']}**")
+        st.markdown(f"📦 Participation: **{row['vote_participation']}%**")
+        st.markdown(f"🎭 Theme: **{row['proposal_theme']}**")
+        st.markdown(render_outcome_label(row['proposal_outcome_label']), unsafe_allow_html=True)
+        progress = float(row["support_rate"]) / 100
+        bar_color = "#3498db" if progress < 0.5 else "#2ecc71"
+        st.markdown(f"""
+        <div style="background-color: #eee; border-radius: 10px; overflow: hidden; height: 20px; margin-top: 0.5rem;">
+            <div style="height: 100%; width: {progress*100:.2f}%; background: {bar_color}; transition: width 0.5s;"></div>
+        </div>
+        <p style="font-size: 0.9rem;">💙 {progress*100:.2f}% Support</p>
+        """, unsafe_allow_html=True)
 
 st.divider()
-
-# --- Chart: Top by Participation ---
 st.subheader("📈 Top Proposals by Voter Participation")
 try:
     df["vote_participation"] = df["vote_participation"].astype(float)
@@ -254,40 +162,16 @@ try:
 except:
     st.warning("Can't parse vote_participation for chart.")
 
-st.divider()
-
-# --- Optional Full Table View ---
 with st.expander("📋 Full Raw Data Table"):
     st.dataframe(df)
 
-# --- Summary of All Columns ---
 st.subheader("🧩 Column Dictionary")
-st.markdown("""
-Here’s a quick explanation of all 41 columns in your dataset:
-
-- **arb_allocation** — ARB amount allocated by the proposal  
-- **contract_address** — Address of the contract that initiated the proposal  
-- **creation_block** — Block in which the proposal was created  
-- **creation_time** — Timestamp of creation  
-- **creation_tx_hash** — TX hash of proposal creation  
-- **delegated_voting_power** — Delegated voting power at the time  
-- **delegates** — Count of delegates who voted  
-- **eth_allocation** — ETH allocation amount  
-- **opex_arb / opex_eth / opex_usd / opex_percentage** — Opex costs in different denominations  
-- **proposal_category** — Category tag (e.g. Treasury, Governance)  
-- **proposal_id / proposal_index / proposal_number** — ID details  
-- **proposal_outcome / proposal_outcome_label** — Raw + human-readable outcome  
-- **proposal_tally** — Total vote count  
-- **proposal_theme** — Thematic label (e.g. Grants, Infra)  
-- **proposal_title** — Title of the proposal  
-- **proposal_type** — Proposal type (e.g. AIP, TempCheck)  
-- **proposer / proposer_name** — Wallet + human-readable name  
-- **proposer_tally** — Voting power of the proposer  
-- **quorum / quorum_progress** — Quorum details  
-- **support_rate** — Support percentage (0-100%)  
-- **usd_allocation / votable_tokens** — Funding and voting info  
-- **vote_participation / voter_participation** — Participation rates  
-- **voters / votes / votes_for / votes_against / votes_abstain / votes_total** — Voting breakdown  
-- **voting_power_utilisation** — How much voting power was used  
-- **voting_start_block / voting_end_block** — Voting window info  
-""")
+st.markdown("""<ul>
+<li><b>arb_allocation</b>: ARB amount allocated</li>
+<li><b>proposal_outcome_label</b>: Outcome label (e.g. Passed, Defeated)</li>
+<li><b>vote_participation</b>: Participation rate (%)</li>
+<li><b>support_rate</b>: Support percentage</li>
+<li><b>proposal_theme</b>: Thematic label</li>
+<li><b>proposal_title</b>: Proposal title</li>
+<li><b>voters</b>: Voter count</li>
+</ul>""", unsafe_allow_html=True)
