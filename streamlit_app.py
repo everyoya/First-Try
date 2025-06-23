@@ -661,23 +661,18 @@ with st.spinner("🔄 Loading governance data..."):
 
 # --- Enhanced Sidebar ---
 with st.sidebar:
-    st.markdown("### 🔍 Filter & Sort")
+    st.markdown("### 🔍 <span style='color:#9ECFF2'>Filter & Sort</span>", unsafe_allow_html=True)
     st.markdown("---")
-    
     st.markdown("**🎯 Proposal Outcome**")
     outcome = st.selectbox("", options=["All"] + sorted(df["proposal_outcome_label"].dropna().unique()), label_visibility="collapsed")
-    
     st.markdown("**🎭 Proposal Theme**")
     theme = st.selectbox("", options=["All"] + sorted(df["proposal_theme"].dropna().unique()), label_visibility="collapsed")
-    
     st.markdown("---")
     st.markdown("**📊 Sort Options**")
-    sort_by = st.selectbox("Sort By", options=["support_rate", "voters", "vote_participation", "proposal_title"], 
+    sort_by = st.selectbox("Sort By", options=["support_rate", "voters", "vote_participation", "proposal_number"], 
                           format_func=lambda x: {"support_rate": "💙 Support Rate", "voters": "👥 Voters", 
-                                                "vote_participation": "🗳 Participation", "proposal_title": "🔤 Title (A-Z)"}.get(x, x))
-    
+                                                "vote_participation": "🗳 Participation", "proposal_number": "🔢 Proposal Number"}.get(x, x))
     sort_order = st.radio("Sort Order", options=["Descending", "Ascending"], horizontal=True)
-    
     st.markdown("---")
     high_support_only = st.checkbox("✅ Show only proposals with > 50% support")
 
@@ -745,30 +740,28 @@ st.markdown("---")
 st.markdown("### 📋 Proposal Details")
 
 for _, row in df.iterrows():
-    # Convert support_rate to proper percentage format
     support_rate_display = float(row['support_rate']) * 100 if float(row['support_rate']) <= 1 else float(row['support_rate'])
-    
     with st.expander(f"📝 {row['proposal_title']} ({support_rate_display:.1f}% support)"):
         col1, col2 = st.columns([2, 1])
-        
         with col1:
             st.markdown(f"**👥 Voters:** {row['voters']:,}")
             st.markdown(f"**🎭 Theme:** {row['proposal_theme']}")
-        
+            # Add proposal_tally as a clickable link if it looks like a URL
+            proposal_tally = str(row.get('proposal_tally', ''))
+            if proposal_tally.startswith('http'):
+                st.markdown(f"[🔗 Proposal Tally Link]({proposal_tally})")
+            elif proposal_tally:
+                st.markdown(f"**Tally:** {proposal_tally}")
         with col2:
             st.markdown(render_outcome_label(row['proposal_outcome_label']), unsafe_allow_html=True)
-        
-        # Enhanced Progress Bar
         support_rate_decimal = float(row["support_rate"]) if float(row["support_rate"]) <= 1 else float(row["support_rate"]) / 100
         progress = support_rate_decimal
-        bar_color = "linear-gradient(90deg, #3498db, #2980b9)" if progress < 0.5 else "linear-gradient(90deg, #2ecc71, #27ae60)"
-        text_color = "rgba(255,255,255,0.9)" if dark_mode else "rgba(0,0,0,0.9)"
-        
+        bar_color = f"linear-gradient(90deg, {DIGITAL_AZURE}, #2ecc71)" if progress < 0.5 else f"linear-gradient(90deg, #2ecc71, {CRYSTAL})"
         st.markdown(f"""
         <div style="margin: 1rem 0;">
             <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                <span style="font-weight: 600; color: {text_color};">Support Rate</span>
-                <span style="font-weight: 600; color: #667eea;">{support_rate_display:.1f}%</span>
+                <span style="font-weight: 600; color: {CRYSTAL};">Support Rate</span>
+                <span style="font-weight: 600; color: {DIGITAL_AZURE};">{support_rate_display:.1f}%</span>
             </div>
             <div class="custom-progress">
                 <div class="custom-progress-fill" style="background: {bar_color}; width: {progress*100:.1f}%; transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);"></div>
