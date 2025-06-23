@@ -617,7 +617,6 @@ for _, row in df.iterrows():
         
         with col1:
             st.markdown(f"**👥 Voters:** {row['voters']:,}")
-            st.markdown(f"**📦 Participation:** {row['vote_participation']}%")
             st.markdown(f"**🎭 Theme:** {row['proposal_theme']}")
         
         with col2:
