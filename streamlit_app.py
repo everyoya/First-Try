@@ -4,6 +4,7 @@ import time
 import pandas as pd
 from streamlit_lottie import st_lottie
 import os
+import re
 
 # --- Brand Colors ---
 MIDNIGHT = "#030D1C"
@@ -746,10 +747,14 @@ for _, row in df.iterrows():
         with col1:
             st.markdown(f"**👥 Voters:** {row['voters']:,}")
             st.markdown(f"**🎭 Theme:** {row['proposal_theme']}")
-            # Add proposal_tally as a clickable link if it looks like a URL
+            # Cleanly display proposal_tally as a clickable link labeled 'Tally'
             proposal_tally = str(row.get('proposal_tally', ''))
-            if proposal_tally.startswith('http'):
-                st.markdown(f"[🔗 Proposal Tally Link]({proposal_tally})")
+            match = re.search(r'href=[\'"]([^\'"]+)[\'"]', proposal_tally)
+            if match:
+                url = match.group(1)
+                st.markdown(f"[Tally]({url})")
+            elif proposal_tally.startswith('http'):
+                st.markdown(f"[Tally]({proposal_tally})")
             elif proposal_tally:
                 st.markdown(f"**Tally:** {proposal_tally}")
         with col2:
