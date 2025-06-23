@@ -1,6 +1,6 @@
 import streamlit as st
 import requests
-import time
+import time 
 import pandas as pd
 from streamlit_lottie import st_lottie
 
