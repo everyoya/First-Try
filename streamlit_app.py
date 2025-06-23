@@ -61,19 +61,15 @@ def load_lottie(url):
 # --- App Setup ---
 st.set_page_config(page_title="Arbitrum DAO Governance", layout="wide", initial_sidebar_state="expanded")
 
-# --- Branding Banner ---
-BANNER_PATH = "entropy_banner.png"
+# --- Branding Logo URL ---
+LOGO_URL = "https://entropyadvisors.com/wp-content/uploads/2024/05/entropy-advisors-logo-white-rgb.svg"
 
-# --- Header with Banner ---
-if os.path.exists(BANNER_PATH):
-    st.image(BANNER_PATH, use_column_width=True)
-else:
-    st.markdown("<h1 style='text-align: center; margin-bottom: 0.5rem;'>🗳️ Arbitrum DAO Governance</h1>", unsafe_allow_html=True)
+# --- Header with Logo ---
+st.markdown(f'<div style="text-align:center; margin-bottom: 1.5rem;"><img src="{LOGO_URL}" alt="Entropy Advisors Logo" style="height:80px;"/></div>', unsafe_allow_html=True)
 
-# --- Sidebar Banner ---
+# --- Sidebar Logo ---
 with st.sidebar:
-    if os.path.exists(BANNER_PATH):
-        st.image(BANNER_PATH, use_column_width=True)
+    st.markdown(f'<div style="text-align:center; margin-bottom: 1.5rem;"><img src="{LOGO_URL}" alt="Entropy Advisors Logo" style="height:60px;"/></div>', unsafe_allow_html=True)
 
 # --- Main Background Gradient ---
 st.markdown(
