@@ -3,6 +3,7 @@ import requests
 import time 
 import pandas as pd
 from streamlit_lottie import st_lottie
+import os
 
 # --- Dune API Setup ---
 DUNE_API_KEY = "Dmb8mqxsxiJ6g3v23dRg1aTVdVUk4JEy"
@@ -59,6 +60,32 @@ def load_lottie(url):
 
 # --- App Setup ---
 st.set_page_config(page_title="Arbitrum DAO Governance", layout="wide", initial_sidebar_state="expanded")
+
+# --- Branding Banner ---
+BANNER_PATH = "entropy_banner.png"
+
+# --- Header with Banner ---
+if os.path.exists(BANNER_PATH):
+    st.image(BANNER_PATH, use_column_width=True)
+else:
+    st.markdown("<h1 style='text-align: center; margin-bottom: 0.5rem;'>🗳️ Arbitrum DAO Governance</h1>", unsafe_allow_html=True)
+
+# --- Sidebar Banner ---
+with st.sidebar:
+    if os.path.exists(BANNER_PATH):
+        st.image(BANNER_PATH, use_column_width=True)
+
+# --- Main Background Gradient ---
+st.markdown(
+    """
+    <style>
+    .main {
+        background: linear-gradient(135deg, #030D1C 0%, #0557F5 70%, #9ECFF2 100%) !important;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
 # --- Modern CSS Styling ---
 st.markdown("""

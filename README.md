@@ -1,4 +1,11 @@
 # 📦 First Try
+
+# Entropy Advisors Streamlit App
+
+## Branding
+
+- Place your Entropy Advisors banner image in the project root as `entropy_banner.png`.
+- The app will use this image for the header and sidebar branding.
 ```
 ⬆️ (Replace above with your app's name)
 ```
