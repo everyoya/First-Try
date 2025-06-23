@@ -739,15 +739,14 @@ st.markdown("---")
 
 # --- Enhanced Proposal Display ---
 st.markdown("### 📋 Proposal Details")
-
 for _, row in df.iterrows():
     support_rate_display = float(row['support_rate']) * 100 if float(row['support_rate']) <= 1 else float(row['support_rate'])
+    st.markdown('<div class="metric-card" style="margin-bottom: 2rem;">', unsafe_allow_html=True)
     with st.expander(f"📝 {row['proposal_title']} ({support_rate_display:.1f}% support)"):
         col1, col2 = st.columns([2, 1])
         with col1:
             st.markdown(f"**👥 Voters:** {row['voters']:,}")
             st.markdown(f"**🎭 Theme:** {row['proposal_theme']}")
-            # Cleanly display proposal_tally as a clickable link labeled 'Tally'
             proposal_tally = str(row.get('proposal_tally', ''))
             match = re.search(r'href=[\'"]([^\'"]+)[\'"]', proposal_tally)
             if match:
@@ -773,6 +772,7 @@ for _, row in df.iterrows():
             </div>
         </div>
         """, unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
 st.markdown("---")
 
