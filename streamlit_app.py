@@ -198,8 +198,19 @@ h1, h2, h3 {
 .custom-progress-fill {
     height: 100%;
     border-radius: 15px;
-    transition: width 0.8s ease;
+    transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    width: 0% !important;
+    animation: slideProgress 1.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes slideProgress {
+    from {
+        width: 0% !important;
+    }
+    to {
+        width: var(--progress-width) !important;
+    }
 }
 
 /* Dark Mode Overrides */
@@ -453,7 +464,7 @@ for _, row in df.iterrows():
                 <span style="font-weight: 600; color: #667eea;">{support_rate_display:.1f}%</span>
             </div>
             <div class="custom-progress">
-                <div class="custom-progress-fill" style="width: {progress*100:.1f}%; background: {bar_color};"></div>
+                <div class="custom-progress-fill" style="background: {bar_color}; --progress-width: {progress*100:.1f}%;"></div>
             </div>
         </div>
         """, unsafe_allow_html=True)
