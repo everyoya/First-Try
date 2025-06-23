@@ -319,23 +319,174 @@ if not st.session_state.hide_modal:
 
 # --- Dark Mode Toggle ---
 dark_mode = st.sidebar.toggle("🌓 Dark Mode", value=True)
+
+# Apply theme based on toggle
 if dark_mode:
     st.markdown("""
     <style>
+    /* Dark Mode Styles */
     .main {
         background: linear-gradient(180deg, #0f0f23 0%, #1a1a2e 100%);
         color: #ffffff;
     }
-    .stMetric {
-        background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%);
+    
+    /* Dark mode text colors */
+    .metric-value {
+        color: #667eea !important;
+    }
+    
+    .metric-label {
+        color: rgba(255,255,255,0.7) !important;
+    }
+    
+    /* Dark mode cards */
+    .metric-card {
+        background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
         border: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    /* Dark mode progress bars */
+    .custom-progress {
+        background: linear-gradient(90deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+    }
+    
+    /* Dark mode expanders */
+    .streamlit-expanderHeader {
+        background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+        border: 1px solid rgba(255,255,255,0.1);
+        color: #ffffff;
+    }
+    
+    /* Dark mode sidebar */
+    [data-testid="stSidebar"] {
+        background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+        color: #ffffff;
+    }
+    
+    /* Dark mode form elements */
+    .stSelectbox > div > div {
+        background: rgba(255,255,255,0.1);
+        border: 1px solid rgba(255,255,255,0.2);
+        color: #ffffff;
+    }
+    
+    .stRadio > div {
+        background: rgba(255,255,255,0.05);
+        color: #ffffff;
+    }
+    
+    .stCheckbox > div {
+        background: rgba(255,255,255,0.05);
+        color: #ffffff;
+    }
+    
+    /* Dark mode charts */
+    [data-testid="stChart"] {
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    /* Dark mode data table */
+    .dataframe {
+        background: rgba(255,255,255,0.05);
+        color: #ffffff;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+else:
+    st.markdown("""
+    <style>
+    /* Light Mode Styles */
+    .main {
+        background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%);
+        color: #333333;
+    }
+    
+    /* Light mode text colors */
+    .metric-value {
+        color: #667eea !important;
+    }
+    
+    .metric-label {
+        color: rgba(0,0,0,0.7) !important;
+    }
+    
+    /* Light mode cards */
+    .metric-card {
+        background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.8) 100%);
+        border: 1px solid rgba(0,0,0,0.1);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    }
+    
+    /* Light mode progress bars */
+    .custom-progress {
+        background: linear-gradient(90deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.05) 100%);
+    }
+    
+    /* Light mode expanders */
+    .streamlit-expanderHeader {
+        background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.8) 100%);
+        border: 1px solid rgba(0,0,0,0.1);
+        color: #333333;
+    }
+    
+    /* Light mode sidebar */
+    [data-testid="stSidebar"] {
+        background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
+        color: #333333;
+        border-right: 1px solid rgba(0,0,0,0.1);
+    }
+    
+    /* Light mode form elements */
+    .stSelectbox > div > div {
+        background: rgba(255,255,255,0.9);
+        border: 1px solid rgba(0,0,0,0.2);
+        color: #333333;
+    }
+    
+    .stRadio > div {
+        background: rgba(255,255,255,0.8);
+        color: #333333;
+    }
+    
+    .stCheckbox > div {
+        background: rgba(255,255,255,0.8);
+        color: #333333;
+    }
+    
+    /* Light mode charts */
+    [data-testid="stChart"] {
+        background: rgba(255,255,255,0.8);
+        border: 1px solid rgba(0,0,0,0.1);
+    }
+    
+    /* Light mode data table */
+    .dataframe {
+        background: rgba(255,255,255,0.8);
+        color: #333333;
+    }
+    
+    /* Light mode buttons */
+    .stButton > button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    /* Light mode headers */
+    h1, h2, h3 {
+        color: #333333 !important;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
     }
     </style>
     """, unsafe_allow_html=True)
 
 # --- Load Data ---
 st.markdown("<h1 style='text-align: center; margin-bottom: 0.5rem;'>🗳️ Arbitrum DAO Governance</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center; color: rgba(255,255,255,0.7); margin-bottom: 2rem;'>Live from Dune Analytics | Query 4628058</p>", unsafe_allow_html=True)
+caption_color = "rgba(255,255,255,0.7)" if dark_mode else "rgba(0,0,0,0.7)"
+st.markdown(f"<p style='text-align: center; color: {caption_color}; margin-bottom: 2rem;'>Live from Dune Analytics | Query 4628058</p>", unsafe_allow_html=True)
 
 with st.spinner("🔄 Loading governance data..."):
     df = run_dune_query(QUERY_ID)
@@ -444,11 +595,12 @@ for _, row in df.iterrows():
         support_rate_decimal = float(row["support_rate"]) if float(row["support_rate"]) <= 1 else float(row["support_rate"]) / 100
         progress = support_rate_decimal
         bar_color = "linear-gradient(90deg, #3498db, #2980b9)" if progress < 0.5 else "linear-gradient(90deg, #2ecc71, #27ae60)"
+        text_color = "rgba(255,255,255,0.9)" if dark_mode else "rgba(0,0,0,0.9)"
         
         st.markdown(f"""
         <div style="margin: 1rem 0;">
             <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                <span style="font-weight: 600; color: rgba(255,255,255,0.9);">Support Rate</span>
+                <span style="font-weight: 600; color: {text_color};">Support Rate</span>
                 <span style="font-weight: 600; color: #667eea;">{support_rate_display:.1f}%</span>
             </div>
             <div class="custom-progress">
@@ -495,8 +647,9 @@ with st.expander("📋 Raw Data Table"):
 
 # --- Footer ---
 st.markdown("---")
-st.markdown("""
-<div style="text-align: center; padding: 2rem 0; color: rgba(255,255,255,0.6);">
+footer_color = "rgba(255,255,255,0.6)" if dark_mode else "rgba(0,0,0,0.6)"
+st.markdown(f"""
+<div style="text-align: center; padding: 2rem 0; color: {footer_color};">
     <p>Made with ❤️ by Entropy Advisors | Powered by Dune Analytics</p>
     <p style="font-size: 0.8rem;">Real-time Arbitrum DAO governance data and insights</p>
 </div>
