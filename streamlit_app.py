@@ -43,7 +43,21 @@ def render_outcome_label(outcome):
     """
 
 def load_lottie(url):
-    return requests.get(url).json()
+    try:
+        response = requests.get(url)
+        response.raise_for_status()  # Raise an exception for bad status codes
+        return response.json()
+    except (requests.RequestException, ValueError) as e:
+        st.warning(f"Could not load animation from {url}. Using fallback.")
+        # Fallback to a simple animation or return None
+        try:
+            # Try a different Lottie animation URL as fallback
+            fallback_url = "https://assets5.lottiefiles.com/packages/lf20_UJNc2t.json"
+            response = requests.get(fallback_url)
+            response.raise_for_status()
+            return response.json()
+        except:
+            return None
 
 # --- App Setup ---
 st.set_page_config(page_title="Arbitrum DAO Governance", layout="wide")
@@ -84,7 +98,11 @@ if "hide_modal" not in st.session_state:
     st.session_state.hide_modal = False
 if not st.session_state.hide_modal:
     with st.container():
-        st_lottie(load_lottie("https://assets3.lottiefiles.com/packages/lf20_2kscqf.json"), height=200)
+        lottie_animation = load_lottie("https://assets3.lottiefiles.com/packages/lf20_2kscqf.json")
+        if lottie_animation:
+            st_lottie(lottie_animation, height=200)
+        else:
+            st.markdown("🎉", unsafe_allow_html=True)
         st.markdown("<h2 style='text-align:center;'>\U0001F44B Ready to dive into Arbitrum governance?</h2><p style='text-align:center;'>Made with ❤️ by Entropy Advisors.</p>", unsafe_allow_html=True)
         if st.button("✖ Close"):
             st.session_state.hide_modal = True
