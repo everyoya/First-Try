@@ -1,32 +1,45 @@
-# 📦 First Try
+# First Try
 
-# Entropy Advisors Streamlit App
+A starter Next.js (App Router + TypeScript) project with an accompanying Express server. ESLint and Prettier are configured for consistent formatting.
 
-## Branding
+## Getting started
 
-- Place your Entropy Advisors banner image in the project root as `entropy_banner.png`.
-- The app will use this image for the header and sidebar branding.
+1. Install dependencies (requires npm access):
+
+```bash
+npm install
 ```
-⬆️ (Replace above with your app's name)
+
+2. Copy the environment template and customize values:
+
+```bash
+cp .env.example .env
 ```
 
-Description of the app ...
+3. Run the Next.js dev server:
 
-## Demo App
+```bash
+npm run dev
+```
 
-[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://app-starter-kit.streamlit.app/)
+4. In a separate terminal, start the Express server:
 
-## GitHub Codespaces
+```bash
+npm run server
+```
 
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/streamlit/app-starter-kit?quickstart=1)
+The Express server reads `DB_URL` and `STORAGE_PATH` from `.env` and exposes a simple `/health` endpoint.
 
-## Section Heading
+## Scripts
+- `npm run dev` – start the Next.js development server.
+- `npm run build` – build the Next.js app for production.
+- `npm run start` – run the built Next.js app.
+- `npm run lint` – lint the project with ESLint.
+- `npm run server` – run the standalone Express server.
 
-This is filler text, please replace this with text for this section.
+## Environment variables
 
-## Further Reading
-
-This is filler text, please replace this with a explanatory text about further relevant resources for this repo
-- Resource 1
-- Resource 2
-- Resource 3
+See `.env.example` for required variables:
+- `PORT` – port for the Express server (defaults to 4000).
+- `DB_URL` – database connection string.
+- `STORAGE_PATH` – path to on-disk storage used by the server.
